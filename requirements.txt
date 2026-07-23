@@ -9,6 +9,10 @@ python-dotenv>=1.0
 # LLM stage (research, outline, captions)
 anthropic>=0.40
 
+# Orchestration (LangGraph state machine — see carousel/graph.py)
+langgraph>=0.2.60
+langchain-core>=0.3.0
+
 # Image providers
 google-genai>=0.3      # Nano Banana (Gemini image generation)
 requests>=2.31         # web image-search provider

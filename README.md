@@ -28,6 +28,20 @@ flowchart TD
 The image step sits inside **Design**: for each slide's image idea, a pluggable
 provider produces the picture, then the slide is laid out on its Sigma template.
 
+## Two orchestrations, one execution layer
+
+The same seven steps ship in two interchangeable orchestrations over the identical
+functions in `research.py`, `render.py`, `selfcheck.py`, etc.:
+
+- **`carousel.pipeline`** — the plain orchestrator. A straight-line script. Easiest
+  to read and the default entry point.
+- **`carousel.graph`** — a [LangGraph](https://langchain-ai.github.io/langgraph/)
+  `StateGraph`. The same steps as an explicit state machine with a typed state, a
+  first-class human-in-the-loop **interrupt**, and a real **self-check → remake
+  cycle**. See [LangGraph orchestration](#langgraph-orchestration).
+
+Neither reimplements a step; they are two ways to wire the same execution layer.
+
 ## How it works
 
 1. **Topic in.** You pass one topic string.
@@ -96,11 +110,14 @@ carousel-producer/
 ├── LICENSE
 ├── .env.example
 ├── .gitignore
+├── Dockerfile                # container image (both orchestrations)
+├── .dockerignore
 ├── requirements.txt
 ├── config.py                 # settings from environment
 ├── brand.example.yaml        # brand config schema
 ├── carousel/
-│   ├── pipeline.py           # orchestrator (topic -> finished deck)
+│   ├── pipeline.py           # plain orchestrator (topic -> finished deck)
+│   ├── graph.py              # LangGraph orchestration (same steps, state machine)
 │   ├── research.py           # web-search research + outline drafting (Claude)
 │   ├── review.py             # human-in-the-loop review gate
 │   ├── images.py             # ImageProvider interface + stub / web-search / Nano Banana
@@ -139,6 +156,76 @@ Or approve inline in one run with `--interactive`. Choose an image source with
 **Runs with no keys.** With no API keys set, research and captions fall back to
 sensible offline drafts and the `stub` provider draws labelled placeholder image
 cards — so you can exercise the full pipeline, then add keys to make it live.
+
+## LangGraph orchestration
+
+`carousel/graph.py` expresses the pipeline as a LangGraph `StateGraph`. Every node
+reads and writes one typed state (`CarouselState`, a `TypedDict` holding the topic,
+brand path, research, the slide outline, the `approved` flag, rendered paths,
+per-slide self-check issues, the retry counter, and the captions), and each node
+wraps an *existing* function — nothing here reimplements research, rendering,
+self-check, or captioning.
+
+```mermaid
+flowchart TD
+    START([START]) --> R[research<br/><i>gather_research + draft_outline</i>]
+    R --> V{{review<br/><b>interrupt · human approval</b>}}
+    V -- Command resume --> G[generate_images<br/><i>pluggable provider</i>]
+    G --> D[render<br/><i>Sigma template</i>]
+    D --> S[self_check<br/><i>overlap · clipping · hierarchy</i>]
+    S -- any slide failed &amp; retries left --> M[remake<br/><i>re-render failures smaller</i>]
+    M --> S
+    S -- all pass / retries spent --> C[captions]
+    C --> E([END])
+```
+
+Two things a straight-line script can't express cleanly:
+
+- **Human-in-the-loop interrupt.** The `review` node calls LangGraph's
+  `interrupt()`. Because the graph is compiled with a checkpointer (`MemorySaver`),
+  it *pauses* at the gate and hands control back to the caller, who resumes with the
+  human's decision via `Command(resume=...)` — a genuine approval gate, not a
+  re-run of the script. `--approve` / `--interactive` resolve it exactly as the
+  plain pipeline does.
+- **The self-check → remake cycle.** After `self_check`, a conditional edge
+  (`route_after_self_check`) routes back to `remake` while any slide failed *and*
+  the retry counter is under `MAX_REMAKE_RETRIES`; `remake` re-renders only the
+  failed slides at a smaller font scale and loops through `self_check` again.
+  Otherwise it falls through to `captions`. The loop back into `self_check` is the
+  point — real cyclic control flow, bounded by state.
+
+Run it exactly like the plain pipeline:
+
+```bash
+# First pass: research + draft, then pause at the review interrupt
+python -m carousel.graph --topic "how to price a freelance project" \
+    --brand examples/example_brand.yaml
+
+# Edit output/outline.json, then approve to resume and finish
+python -m carousel.graph --topic "how to price a freelance project" \
+    --brand examples/example_brand.yaml --approve
+```
+
+## Run with Docker
+
+The image bundles both orchestrations. No keys are baked in — pass them at run time.
+
+```bash
+docker build -t carousel-producer .
+
+# Default command prints the CLI help
+docker run --rm carousel-producer
+
+# Produce a deck (mount ./output to keep it; add -e KEY=... to go live)
+docker run --rm -v "$PWD/output:/app/output" \
+    -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+    carousel-producer \
+    python -m carousel.graph --topic "how to price a project" \
+        --brand examples/example_brand.yaml --interactive
+```
+
+With no keys set it still runs end-to-end on offline drafts and the `stub` image
+provider.
 
 ## Security notes
 

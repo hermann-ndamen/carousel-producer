@@ -1,0 +1,44 @@
+# Keep the build context small and free of secrets / local cruft.
+
+# Secrets and local config
+.env
+*.local.yaml
+brand.yaml
+
+# Version control
+.git
+.gitignore
+
+# Python caches / build artefacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Runtime output (generated decks, outlines, captions)
+output/
+
+# Brand assets (fonts / photos you may not have redistribution rights to)
+assets/
+!examples/**
+
+# Generated images
+*.png
+!docs/**/*.png
+
+# Docs / meta not needed in the image
+README.md
+LICENSE
+
+# OS
+.DS_Store
