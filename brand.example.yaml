@@ -1,0 +1,40 @@
+# Brand configuration — copy to brand.yaml and edit.
+#
+# Branding is pure configuration. This one file is everything the engine needs
+# to render carousels in YOUR identity: colours, handle, fonts, assets, and the
+# Sigma variant you want. The same engine renders anyone's deck from their own
+# file.
+
+name: "Your Brand"          # used on light-theme headers and in captions
+handle: "@yourhandle"       # shown in the header of every slide
+pill_text: "Save for later" # the small pill button in the top-right
+
+# Which Sigma variant to render the whole deck in:
+#   sigma-dark    dark canvas, glow atmosphere, white type
+#   sigma-light   off-white canvas, deep-navy type
+#   sigma-hybrid  alternates dark/light slides across the deck
+style: "sigma-dark"
+
+colors:
+  primary: "#ed5500"   # accent: highlighted headline words, nav bar, CTA ring
+  secondary: "#2ec0ff" # supporting accent
+  dark_bg: "#000000"   # background for dark slides
+  light_bg: "#f8f8f8"  # background for light slides
+
+# Font files by weight. Point these at any TTF/OTF you have the rights to use.
+# Missing weights fall back to the lightest available; if none are set the engine
+# uses a built-in font so it still renders. 'mono' is used for prompt slides.
+fonts:
+  black: "assets/fonts/Poppins-Black.ttf"
+  extrabold: "assets/fonts/Poppins-ExtraBold.ttf"
+  extrabold_italic: "assets/fonts/Poppins-ExtraBoldItalic.ttf"
+  bold: "assets/fonts/Poppins-Bold.ttf"
+  semibold: "assets/fonts/Poppins-SemiBold.ttf"
+  medium: "assets/fonts/Poppins-Medium.ttf"
+  regular: "assets/fonts/Poppins-Regular.ttf"
+  mono: "assets/fonts/JetBrainsMono-Regular.ttf"
+
+# Brand assets (optional). Paths are relative to this file.
+assets:
+  logo: "assets/logo.png"        # small mark shown next to the handle
+  headshot: "assets/headshot.jpg" # circular headshot on the CTA slide

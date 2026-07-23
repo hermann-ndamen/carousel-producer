@@ -1,0 +1,32 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Runtime output (generated decks, outlines, captions)
+output/
+*.local.yaml
+brand.yaml
+
+# Brand assets (don't commit fonts/photos you may not have redistribution rights to)
+assets/
+!examples/**
+
+# Generated images
+*.png
+!docs/**/*.png
+
+# OS
+.DS_Store

@@ -1,0 +1,21 @@
+# A tiny, runnable example brand file with no external assets.
+#
+# It sets colours, a handle, and the Sigma Hybrid style. No fonts or images are
+# referenced, so the engine uses its built-in font and placeholder image cards —
+# meaning you can run the whole pipeline with just this file and no downloads:
+#
+#   python -m carousel.pipeline \
+#     --topic "how to price a freelance project" \
+#     --brand examples/example_brand.yaml \
+#     --interactive
+
+name: "Example Studio"
+handle: "@examplestudio"
+pill_text: "Save this"
+style: "sigma-hybrid"
+
+colors:
+  primary: "#ff5a1f"
+  secondary: "#2ec0ff"
+  dark_bg: "#0b0f1a"
+  light_bg: "#f6f5f2"

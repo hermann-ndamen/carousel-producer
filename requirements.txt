@@ -1,0 +1,14 @@
+# Core rendering
+pillow>=10.0
+numpy>=1.24
+
+# Configuration
+pyyaml>=6.0
+python-dotenv>=1.0
+
+# LLM stage (research, outline, captions)
+anthropic>=0.40
+
+# Image providers
+google-genai>=0.3      # Nano Banana (Gemini image generation)
+requests>=2.31         # web image-search provider
